@@ -71,69 +71,17 @@ public class BLEU {
     }
 
 
-    public static void userAnswerSegs() throws Exception{
-        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("data/recordcontent.csv")));
-        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("data/UserAnswer2GS/segs-useranswer.txt")));
 
-        String line = new String();
-        while ((line=br.readLine())!=null) {
-            String segs[] = line.split(",");
-            String studentID = segs[0];
-            int topicID = Integer.parseInt(segs[2]);
-            String answer = segs[3];
-            for (int i = 2;i<=4;i++){
-                for(String s:ngram(answer,i)){
-                    if(!topics.get(topicID).contains(s)){
-                        bw.write("SEGS::"+topicID+"::"+i+"::"+s+"\n");
-                        bw.flush();}
-                }
-            }
-        }
-        bw.close();
-    }
 
-    public static void clickedResultSegs() throws Exception{
-        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("data/UserAnswer2GS/clickedContent.txt")));
-        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("data/UserAnswer2GS/segs-clickedresult.txt")));
-
-        String line = new String();
-        while ((line=br.readLine())!=null) {
-            String segs[] = line.split("\t");
-            int topicID = Integer.parseInt(segs[0]);
-            String answer = segs[1];
-            for (int i = 2;i<=4;i++){
-                for(String s:ngram(answer,i)){
-                    if(!topics.get(topicID).contains(s)){
-                    bw.write("SEGS::"+topicID+"::"+i+"::"+s+"\n");
-                    bw.flush();}
-                }
-            }
-        }
-        bw.close();
-    }
     public static HashMap<Integer,String> topics;
-    public static void init()throws Exception{
-        topics = new HashMap<Integer,String>();
-        BufferedReader topicReader = new BufferedReader( new InputStreamReader(new FileInputStream("data/topics.csv")));
-        String line = new String();
-        while ((line = topicReader.readLine()) != null){
-            String segs[] = line.split(",");
-            int tid = Integer.valueOf(segs[0]);
-            String content = "";
-            for(int i = 1;i<= segs.length-1;i++){
-                content += segs[i];
-            }
-            topics.put(tid,content);
-        }
 
-    }
     public static void main(String args[])throws Exception{
-        init();
-        clickedResultSegs();
-        userAnswerSegs();
+
+        String referenceFile = "local/gs-manual.txt";
+        String bleuResultFile = referenceFile+".bleu";
 
         HashMap<Integer, String> reference = new HashMap<Integer, String>();
-        BufferedReader refReader = new BufferedReader( new InputStreamReader(new FileInputStream("data/UserAnswer2GS/segs-useranswer.txt.out")));
+        BufferedReader refReader = new BufferedReader( new InputStreamReader(new FileInputStream(referenceFile)));
         String line = new String();
         while((line=refReader.readLine()) != null){
             String segs[] = line.split("\t");
@@ -143,7 +91,8 @@ public class BLEU {
         }
 
         BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("data/recordcontent.csv")));
-        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("data/bleuresult-with-useranwser.csv")));
+
+        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream(bleuResultFile)));
         line = new String();
         while ((line=br.readLine())!=null){
             String segs[] = line.split(",");

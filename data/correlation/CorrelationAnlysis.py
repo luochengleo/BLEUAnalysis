@@ -1,4 +1,7 @@
 from collections import defaultdict
+import sys
+
+filename = sys.argv[1]
 
 # stduent id -> taskid -> [ bleuscore, zscorefrom user, recordscore from annoation]
 sid2tid2score = defaultdict(lambda:defaultdict(lambda:[0.0,0.0,0.0]))
@@ -10,7 +13,7 @@ for l in open('validusers.txt'):
 
 alltopicid = set()
 
-for l in open('bleuresult-with-useranwser.csv'):
+for l in open(filename):
     segs = l.strip().split(',')
     sid = segs[0]
     tid = segs[1]
@@ -35,6 +38,7 @@ for l in open('recordscore.txt').readlines()[1:]:
 # l2 means annoscore
 
 result = open('manual.csv','a')
+result.write(filename+'\n')
 
 for tid in alltopicid:
     l0 = list()
