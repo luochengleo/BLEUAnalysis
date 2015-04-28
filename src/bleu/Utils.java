@@ -51,14 +51,14 @@ public class Utils {
 
     public static void userAnswerSegs() throws Exception{
         BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("data/recordcontent.csv")));
-        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/segs-useranswer.txt")));
+        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/segs/segs-useranswer.txt")));
 
         String line = new String();
         while ((line=br.readLine())!=null) {
             String segs[] = line.split(",");
             String studentID = segs[0];
             int topicID = Integer.parseInt(segs[2]);
-            String answer = segs[3];
+            String answer = cleanString(segs[3]);
             for (int i = 2;i<=4;i++){
                 for(String s:ngram(answer,i)){
                     if(!topics.get(topicID).contains(s)){
@@ -74,14 +74,14 @@ public class Utils {
     }
 
     public static void clickedResultSegs() throws Exception{
-        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("data/UserAnswer2GS/clickedContent.txt")));
-        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/segs-clickedresult.txt")));
+        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("local/clickedContent.txt")));
+        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/segs/segs-clickedresult.txt")));
 
         String line = new String();
         while ((line=br.readLine())!=null) {
             String segs[] = line.split("\t");
             int topicID = Integer.parseInt(segs[0]);
-            String answer = segs[1];
+            String answer = cleanString(segs[1]);
             for (int i = 2;i<=4;i++){
                 for(String s:ngram(answer,i)){
                     if(!topics.get(topicID).contains(s)){
@@ -97,15 +97,15 @@ public class Utils {
     }
 
     public static void fixedResultSegs() throws Exception{
-        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("data/UserAnswer2GS/fixedContent.txt")));
-        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/segs-fixedresult.txt")));
+        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("local/fixedContent.txt")));
+        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/segs/segs-fixedresult.txt")));
 
         String line = new String();
         while ((line=br.readLine())!=null) {
             String segs[] = line.split("\t");
             int topicID = Integer.parseInt(segs[0]);
             int dura = Integer.parseInt(segs[1]);
-            String answer = segs[2];
+            String answer = cleanString(segs[2]);
             for (int i = 2;i<=4;i++){
                 for(String s:ngram(answer,i)){
                     if(!topics.get(topicID).contains(s)){
@@ -136,12 +136,32 @@ public class Utils {
         }
 
     }
+
+    public static String cleanString(String src){
+        String rtr = src;
+        rtr = rtr.replace(".","");
+        rtr = rtr.replace(" ","");
+        rtr = rtr.replace("\t","");
+        rtr = rtr.replace("\n","");
+        rtr = rtr.replace(">","");
+        rtr = rtr.replace("<","");
+        rtr = rtr.replace("_","");
+        rtr = rtr.replace("-","");
+        rtr = rtr.replace("(","");
+        rtr = rtr.replace(")","");
+        rtr = rtr.replace(".","");
+        rtr = rtr.replace(".","");
+        rtr = rtr.replace(".","");
+
+        return rtr;
+    }
     public static void allResultText2Segs() throws Exception{
-        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("data/allResultText.txt")));
-        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/allResultTextSegs.txt")));
+        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("local/idf/allResultText.txt")));
+        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/idf/allResultTextSegs.txt")));
         String line = new String();
         while ((line=br.readLine())!=null){
-            for (int i  =2;i<=4;i++){
+            line = cleanString(line);
+            for (int i =2;i<=4;i++){
                 for (String s:ngram(line,i)){
                     bw.write(s+"\n");
                     bw.flush();
@@ -153,7 +173,7 @@ public class Utils {
     }
     public static void main(String args[])throws Exception{
         init();
-//        allResultText2Segs();
+       allResultText2Segs();
         clickedResultSegs();
         userAnswerSegs();
         fixedResultSegs();

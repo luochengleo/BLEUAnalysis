@@ -1,0 +1,6 @@
+1. 构建标准答案
+    几种方法
+    1. 选择手工构建的bestAnswer.txt 在data路径下；
+    2. 采用自动构建方法：
+        准备工作：
+        1. 计算idf，采用了allResultTextSegs.txt,采用calculateIDF.py 计算的到IDF

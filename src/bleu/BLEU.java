@@ -8,61 +8,62 @@ import java.util.HashMap;
  * Created by cheng on 2015/3/26.
  */
 public class BLEU {
-    public static double min(double d1, double d2){
-        if (d1<= d2){
+    public static double min(double d1, double d2) {
+        if (d1 <= d2) {
             return d1;
-        }
-        else{
+        } else {
             return d2;
         }
     }
 
-    public static double logBLEU(String candidate, String reference){
+    public static double logBLEU(String candidate, String reference) {
         double sum = 0.0;
         double c = candidate.length();
         double r = reference.length();
-        sum += min(1-r/c,0);
-        sum += 0.33 * pn(candidate,reference,1)+0.33 * pn(candidate,reference,2)+0.2 * pn(candidate,reference,3)+0.33 * pn(candidate,reference,4);
+        sum += min(1 - r / c, 0);
+        sum += 0.33 * pn(candidate, reference, 1) + 0.33 * pn(candidate, reference, 2) + 0.2 * pn(candidate, reference, 3) + 0.33 * pn(candidate, reference, 4);
 //        sum += 0.2 * pn(candidate,reference,1)+0.2 * pn(candidate,reference,2)+0.2 * pn(candidate,reference,3)+0.2 * pn(candidate,reference,4)+0.2 * pn(candidate,reference,5);
 
         return sum;
 
     }
-    public static double pn(String candidate, String reference, int n){
+
+    public static double pn(String candidate, String reference, int n) {
         double d = 0.0;
 
-        ArrayList<String> candNgramList = ngram(candidate,n);
-        ArrayList<String> refNgramList = ngram(reference,n);
-        double sumNormal =0.0;
+        ArrayList<String> candNgramList = ngram(candidate, n);
+        ArrayList<String> refNgramList = ngram(reference, n);
+        double sumNormal = 0.0;
         double sumClip = 0.0;
-        for(String s:candNgramList){
-            sumNormal += count(candidate,s);
+        for (String s : candNgramList) {
+            sumNormal += count(candidate, s);
             sumClip += min(count(candidate, s), count(reference, s));
         }
 
-        return sumClip/sumNormal;
+        return sumClip / sumNormal;
 
     }
-    public static int count(String src,String dist){
+
+    public static int count(String src, String dist) {
         int count = 0;
         int start = 0;
-        while(src.indexOf(dist,start) >=0 && start <src.length()){
-            count +=1;
-            start = src.indexOf(dist,start)+dist.length();
+        while (src.indexOf(dist, start) >= 0 && start < src.length()) {
+            count += 1;
+            start = src.indexOf(dist, start) + dist.length();
         }
         return count;
     }
-    public static ArrayList<String> ngram(String s, int n){
+
+    public static ArrayList<String> ngram(String s, int n) {
         ArrayList<String> ngramList = new ArrayList<String>();
         char[] charList = s.toCharArray();
-        if (n>charList.length){
+        if (n > charList.length) {
             return ngramList;
-        }
-        else{
-            for (int i = 0;i <=charList.length-n;i++){
+        } else {
+            for (int i = 0; i <= charList.length - n; i++) {
                 String temp = new String();
-                for (int j = 0;j<n;j++){
-                    temp += charList[i+j];
+                for (int j = 0; j < n; j++) {
+                    temp += charList[i + j];
                 }
                 ngramList.add(temp);
             }
@@ -71,39 +72,44 @@ public class BLEU {
     }
 
 
+    public static HashMap<Integer, String> topics;
+
+    public static void main(String args[]) throws Exception {
 
 
-    public static HashMap<Integer,String> topics;
+        File gsdir = new File("local/goldenstandard");
+        for (File f : gsdir.listFiles()) {
 
-    public static void main(String args[])throws Exception{
+            if (f.getName().contains("gs-")) {
+                String referenceFile = f.getAbsolutePath();
+                String bleuResultFile = referenceFile.replace("goldenstandard","bleu") + ".bleu";
 
-        String referenceFile = "local/gs-manual.txt";
-        String bleuResultFile = referenceFile+".bleu";
+                HashMap<Integer, String> reference = new HashMap<Integer, String>();
+                BufferedReader refReader = new BufferedReader(new InputStreamReader(new FileInputStream(referenceFile)));
+                String line = new String();
+                while ((line = refReader.readLine()) != null) {
+                    String segs[] = line.split("\t");
+                    int k = Integer.valueOf(segs[0]);
 
-        HashMap<Integer, String> reference = new HashMap<Integer, String>();
-        BufferedReader refReader = new BufferedReader( new InputStreamReader(new FileInputStream(referenceFile)));
-        String line = new String();
-        while((line=refReader.readLine()) != null){
-            String segs[] = line.split("\t");
-            int k = Integer.valueOf(segs[0]);
+                    reference.put(k, segs[1]);
+                }
 
-            reference.put(k,segs[1]);
+                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("data/recordcontent.csv")));
+
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(bleuResultFile)));
+                line = new String();
+                while ((line = br.readLine()) != null) {
+                    String segs[] = line.split(",");
+                    String studentID = segs[0];
+                    int topicID = Integer.parseInt(segs[2]);
+                    String answer = segs[3];
+                    System.out.println(topicID);
+                    bw.write(studentID + ',' + topicID + ',' + logBLEU(answer, reference.get(topicID)) + '\n');
+                    bw.flush();
+
+                }
+                bw.close();
+            }
         }
-
-        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("data/recordcontent.csv")));
-
-        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream(bleuResultFile)));
-        line = new String();
-        while ((line=br.readLine())!=null){
-            String segs[] = line.split(",");
-            String studentID=segs[0];
-            int topicID = Integer.parseInt(segs[2]);
-            String answer = segs[3];
-            System.out.println(topicID);
-            bw.write(studentID+','+topicID+','+logBLEU(answer,reference.get(topicID))+'\n');
-            bw.flush();
-
-        }
-        bw.close();
     }
 }
