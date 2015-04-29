@@ -38,8 +38,9 @@ for l in open('recordscore.txt').readlines()[1:]:
 # l2 means annoscore
 
 result = open('manual.csv','a')
-result.write(filename+'\n')
 
+filename = filename.replace('./bleu/','').replace('.bleu','')
+gset,oset = filename.split('+')
 for tid in alltopicid:
     l0 = list()
     l1 = list()
@@ -60,4 +61,5 @@ for tid in alltopicid:
     print 'Satisfaction(self) v.s. Record(3rd party)'
     print pearsonr(l1,l2)[0],pearsonr(l1,l2)[1]
 
-    result.write(','.join([str(item) for item in [tid,pearsonr(l0,l2)[0],pearsonr(l0,l2)[1],pearsonr(l0,l1)[0],pearsonr(l0,l1)[1], pearsonr(l1,l2)[0],pearsonr(l1,l2)[1]]])+'\n')
+    result.write(','.join([str(item) for item in [gset,oset,tid,pearsonr(l0,l2)[0],pearsonr(l0,l2)[1],pearsonr(l0,l1)[0],pearsonr(l0,l1)[1], pearsonr(l1,l2)[0],pearsonr(l1,l2)[1]]])+'\n')
+result.close()

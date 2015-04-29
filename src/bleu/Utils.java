@@ -96,6 +96,30 @@ public class Utils {
         bw.close();
     }
 
+    public static void userClickedResultSegs() throws Exception{
+        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("local/userClickedContent.txt")));
+        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/segs/user-segs-clickedresult.txt")));
+
+        String line = new String();
+        while ((line=br.readLine())!=null) {
+            String segs[] = line.split("\t");
+            int sid = Integer.parseInt(segs[0]);
+            int topicID = Integer.parseInt(segs[1]);
+            String answer = cleanString(segs[2]);
+            for (int i = 2;i<=4;i++){
+                for(String s:ngram(answer,i)){
+                    if(!topics.get(topicID).contains(s)){
+                        bw.write("@_@"+sid+"@_@"+topicID+"@_@"+i+"@_@"+s+"@_@1\n");
+                        bw.flush();}
+                    else{
+                        System.out.println("EXCLUDE " + s);
+                    }
+                }
+            }
+        }
+        bw.close();
+    }
+
     public static void fixedResultSegs() throws Exception{
         BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("local/fixedContent.txt")));
         BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/segs/segs-fixedresult.txt")));
@@ -119,6 +143,32 @@ public class Utils {
         }
         bw.close();
     }
+
+    public static void userFixedResultSegs() throws Exception{
+        BufferedReader br  =new BufferedReader( new InputStreamReader(new FileInputStream("local/userFixedContent.txt")));
+        BufferedWriter bw = new BufferedWriter( new OutputStreamWriter(new FileOutputStream("local/segs/user-segs-fixedresult.txt")));
+
+        String line = new String();
+        while ((line=br.readLine())!=null) {
+            String segs[] = line.split("\t");
+            int sid = Integer.parseInt(segs[0]);
+            int topicID = Integer.parseInt(segs[1]);
+            int dura = Integer.parseInt(segs[2]);
+            String answer = cleanString(segs[3]);
+            for (int i = 2;i<=4;i++){
+                for(String s:ngram(answer,i)){
+                    if(!topics.get(topicID).contains(s)){
+                        bw.write("SEGS@_@"+sid+"@_@"+topicID+"@_@"+i+"@_@"+s+"@_@"+dura+"\n");
+                        bw.flush();}
+                    else{
+                        System.out.println("EXCLUDE "+s);
+                    }
+                }
+            }
+        }
+        bw.close();
+    }
+
 
     public static HashMap<Integer,String> topics;
     public static void init()throws Exception{
@@ -174,8 +224,13 @@ public class Utils {
     public static void main(String args[])throws Exception{
         init();
        allResultText2Segs();
+
         clickedResultSegs();
+        userClickedResultSegs();
+
         userAnswerSegs();
+
         fixedResultSegs();
+        userFixedResultSegs();
     }
 }

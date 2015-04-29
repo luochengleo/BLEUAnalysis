@@ -78,37 +78,43 @@ public class BLEU {
 
 
         File gsdir = new File("local/goldenstandard");
-        for (File f : gsdir.listFiles()) {
+        File ocdir = new File("local/outcome");
+        for (File g : gsdir.listFiles()) {
+            for (File o : ocdir.listFiles()) {
 
-            if (f.getName().contains("gs-")) {
-                String referenceFile = f.getAbsolutePath();
-                String bleuResultFile = referenceFile.replace("goldenstandard","bleu") + ".bleu";
+                if (g.getName().contains("gs-") && o.getName().contains("oc")) {
+                    String referenceFile = g.getAbsolutePath();
 
-                HashMap<Integer, String> reference = new HashMap<Integer, String>();
-                BufferedReader refReader = new BufferedReader(new InputStreamReader(new FileInputStream(referenceFile)));
-                String line = new String();
-                while ((line = refReader.readLine()) != null) {
-                    String segs[] = line.split("\t");
-                    int k = Integer.valueOf(segs[0]);
+                    String bleuResultFile = "local/bleu/bleu/" + g.getName().replace(".txt", "") + "+" + o.getName().replace(".txt", "") + ".bleu";
+                    HashMap<Integer, String> reference = new HashMap<Integer, String>();
+                    BufferedReader refReader = new BufferedReader(new InputStreamReader(new FileInputStream(g.getAbsoluteFile())));
+                    String line = new String();
+                    while ((line = refReader.readLine()) != null) {
+                        String segs[] = line.split("\t");
+                        int k = Integer.valueOf(segs[0]);
+                        reference.put(k, segs[1]);
+                    }
+                    refReader.close();
 
-                    reference.put(k, segs[1]);
+                    BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(o.getAbsolutePath())));
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(bleuResultFile)));
+                    line = new String();
+                    while ((line = br.readLine()) != null) {
+                        String segs[] = line.split("\t");
+                        String studentID = segs[0];
+                        int topicID = Integer.parseInt(segs[1]);
+                        String answer = segs[2];
+                        System.out.println(topicID);
+
+                        if (reference.keySet().contains(topicID)) {
+                            bw.write(studentID + ',' + topicID + ',' + logBLEU(answer, reference.get(topicID)) + '\n');
+                        }
+
+                        bw.flush();
+
+                    }
+                    bw.close();
                 }
-
-                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("data/recordcontent.csv")));
-
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(bleuResultFile)));
-                line = new String();
-                while ((line = br.readLine()) != null) {
-                    String segs[] = line.split(",");
-                    String studentID = segs[0];
-                    int topicID = Integer.parseInt(segs[2]);
-                    String answer = segs[3];
-                    System.out.println(topicID);
-                    bw.write(studentID + ',' + topicID + ',' + logBLEU(answer, reference.get(topicID)) + '\n');
-                    bw.flush();
-
-                }
-                bw.close();
             }
         }
     }
